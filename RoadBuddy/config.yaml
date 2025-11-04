@@ -1,0 +1,80 @@
+# RoadBuddy Qwen3-VL Configuration
+# Optimized for RTX 3090 / NVIDIA A30 (24GB VRAM)
+# Target: 16 CPU cores, 64GB RAM
+
+# Model Configuration
+model:
+  name: "Qwen/Qwen3-VL-8B-Instruct"
+  quantization: "4bit" # Options: "4bit", "8bit", "none"
+  torch_dtype: "bfloat16" # Options: "bfloat16", "float16", "float32"
+  device_map: "auto"
+  trust_remote_code: true
+
+# Quantization Config (for 4bit)
+quantization_config:
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_quant_type: "nf4"
+
+# Frame Extraction
+frames:
+  method: "smart" # Options: "uniform", "support", "smart"
+  max_frames: 6 # Maximum frames to extract per video
+  target_size: [384, 384] # Resize frames to this size [height, width]
+  fps: 0.5 # For uniform sampling
+
+# Inference
+inference:
+  max_new_tokens: 10
+  temperature: 0.1 # Low temperature for more deterministic output
+  do_sample: false
+  top_p: 0.9
+  batch_size: 1 # Process one sample at a time
+
+# Fine-tuning (LoRA)
+lora:
+  r: 64 # LoRA rank
+  lora_alpha: 128
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+# Training
+training:
+  output_dir: "./checkpoints/qwen3vl-roadbuddy"
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 0.0002
+  weight_decay: 0.01
+  warmup_steps: 100
+  logging_steps: 10
+  save_steps: 100
+  save_total_limit: 3
+  fp16: false
+  bf16: true
+  gradient_checkpointing: true
+  optim: "paged_adamw_32bit"
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 0.3
+  group_by_length: true
+
+# Data
+data:
+  train_json: "traffic_buddy_train+public_test/train/train.json"
+  test_json: "traffic_buddy_train+public_test/public_test/public_test.json"
+  base_dir: "traffic_buddy_train+public_test"
+  train_split: 0.9 # 90% train, 10% validation
+  random_seed: 42
+
+# Output
+output:
+  submission_file: "submission.csv"
+  checkpoint_dir: "checkpoints"
+  logs_dir: "logs"

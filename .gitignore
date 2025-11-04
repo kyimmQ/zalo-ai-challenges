@@ -1,0 +1,7 @@
+.venv
+*.pyc
+**/__pycache__
+
+traffic_buddy_*
+
+.DS_Store
