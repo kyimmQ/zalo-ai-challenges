@@ -185,6 +185,6 @@ poetry.toml
 pyrightconfig.json
 
 .vscode
-**/data/train/
-**/data/public_test/
+**/data/train/videos
+**/data/public_test/videos
 **/pretrained/
